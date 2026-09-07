@@ -19,8 +19,10 @@ work already in flight.
 ```sh
 python3 pilot.py selftest                       # before believing any negative answer
 python3 pilot.py status                         # what is live, measured
-python3 pilot.py start --unit W3 --task review \
+python3 pilot.py start --unit W3 --task implement \
         --cwd /path/to/worktree --brief /path/to/brief.txt
+python3 pilot.py start --unit W3 --task review \
+        --cwd /path/to/worktree --brief /path/to/brief.txt   # --task is a free label, not a mode
 python3 pilot.py wait <run-id> --lines 80       # run this as a tracked job
 python3 pilot.py log  <run-id> --lines 80       # read the file, never a live pipe
 python3 pilot.py stop <run-id>
@@ -78,7 +80,8 @@ evidence that a *finished* run happened; it is not evidence about a run in fligh
 - **PI is slow.** Budget wall-clock generously; a trivial prompt can take minutes. There is no turn
   cap, only your timeout.
 - Give each task its own session (`--session-id`) or none (`--no-session`), so one task's context
-  never bleeds into the next. A reviewer that shares the author's session is not independent.
+  never bleeds into the next. A run that continues another task's session inherits its conclusions,
+  which defeats the point whenever the second run exists to check the first.
 
 **PI runs with full permissions and no isolation.** On a single-user host that is the same access you
 have, so it is not a new exposure — but it is why PI is never the thing that runs an untrusted
@@ -102,15 +105,18 @@ PI is not in your conversation. Everything it needs is in the brief or in files 
 ## After PI returns
 
 **Verify before you believe.** Run the build, run the tests, and reproduce at least one claim by
-hand.
+hand. PI reports what it believes it did, and belief is not evidence.
 
-Then dispatch an independent review — a **fresh** PI session, never the session that wrote the code.
+If you want a second PI run to check the first, give it a **fresh session** — never the one that
+produced the work. Continuing that session hands it its own conclusions as context.
 
-You judge the findings. Blocking ones go back with the finding quoted, not paraphrased.
+You judge the result. Anything you send back goes back quoted, not paraphrased.
 
 ## What PI is good at, and what it is not
 
-Measured over several rounds on one codebase, as reviewer and as author:
+Measured over several rounds on one codebase, across both reading and writing tasks. These are
+traits to account for when you decide what to hand it and how to check what comes back — what PI is
+for on a given project is your call, not this skill's:
 
 **Good at close reading.** It found a TOCTOU race between a guard query and the read it guarded, a
 newly added check that nothing proved could fail, and a credential leaking into durable evidence
@@ -123,14 +129,15 @@ then misjudges its severity, and will report an execution point that does not ex
 once changed a test and added the probe for it in the same commit, so the probe agreed with the fix
 by construction.
 
-So: use it where the answer can be measured and the task is to measure carefully. Do not use it where
-the task is to distrust the evidence in front of it — and never as the only reviewer of something
-that matters.
+The practical consequence is about verification, not about role: the less a task's success can be
+measured independently of PI's own account of it, the more of that measuring you have to do yourself
+after it returns. Hand it whatever the project needs; scale your checking to how easily its claims
+can be falsified.
 
 ## When not to use PI
 
-- Anything needing your conversation's context — an orchestration decision, a judgement between
-  reviewers.
+- Anything needing your conversation's context. PI cannot see it, and a brief that tries to restate
+  it is usually longer and worse than doing the work in-session.
 - A task whose whole content is a question. PI edits files; asking it a question spends minutes to
   get a paragraph.
 - Work on a shared checkout. PI gets its own worktree, like every other agent.

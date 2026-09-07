@@ -85,9 +85,10 @@ stronger model on the same diff. It also accepts a green check as proof, misjudg
 defects it has itself reproduced, and once changed a test and added its probe in the same commit, so
 the probe agreed with the fix by construction.
 
-Use it where the answer can be measured and the job is to measure carefully. Do not use it where the
-job is to distrust the evidence in front of it, and never as the only reviewer of something that
-matters.
+What follows from that is a rule about verification, not about role. The less a task's success can
+be measured independently of PI's own account of it, the more of that measuring the orchestrator has
+to do after it returns. What PI is for on a given project is the orchestrator's decision; this
+repository only drives it and reports what happened.
 
 ## Provenance
 

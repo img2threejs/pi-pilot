@@ -3,12 +3,16 @@
 Launch and observe [PI](https://github.com/earendil-works/pi) runs from an orchestrating agent, and
 a skill that tells the orchestrator how to brief PI and how to judge what comes back.
 
-Two files:
+Two files at the root, plus a `skills/` subdir:
 
 | | |
 |---|---|
-| `pilot.py` | starts PI runs, records them, and answers *what is running* — no dependencies beyond the Python standard library |
-| `SKILL.md` | an [Agent Skills](https://agentskills.io) skill for the orchestrating agent: how to brief PI, what its failure modes are, and where it is strong and weak |
+| `README.md` | this file |
+| `skills/` | one directory per role skill (orchestrator, reviewer, adjudicator, coder, distil, prescription-verifier, instruments) |
+
+The `pi-pilot` skill directory under `skills/` carries `pilot.py` alongside `SKILL.md`; that
+pairing is a convention of the launcher skill (the SKILL teaches the orchestrator how to invoke the
+launcher; the launcher is the script the SKILL refers to).
 
 ## Why this exists
 
@@ -71,7 +75,8 @@ Expects PI at `~/.local/bin/pi`. Override the state directory with `PI_PILOT_HOM
 Drop it where your agent finds skills — `.claude/skills/pi-pilot/SKILL.md`,
 `~/.pi/agent/skills/pi-pilot/SKILL.md`, `.agents/skills/pi-pilot/SKILL.md`, or any other
 Agent-Skills location — and adjust the `pilot.py` paths in its examples to wherever you put the
-script.
+script. The recommended install is a symlink to `skills/pi-pilot/` under this repo (see "The skills"
+below); that way an edit here is an edit everywhere.
 
 It carries the failure modes above, the invocation rules that matter (`--no-approve` is not a sandbox
 control; registration of a skill is not application of it), how to write a brief PI will not waste
@@ -102,15 +107,34 @@ MIT.
 ## The skills
 
 `pilot.py` starts and tracks runs. The skills say what to put in the brief and what to do with what
-comes back. Install the ones you need into the agent's skills directory (`~/.pi/agent/skills/`,
-`~/.agents/skills/`, `.pi/skills/` or `.agents/skills/`).
+comes back. **The canonical location is `skills/<name>/SKILL.md` under this repo.** Install them by
+symlinking the directory into the agent's skills location (`~/.pi/agent/skills/`,
+`~/.agents/skills/`, `~/.claude/skills/`, `.pi/skills/` or `.agents/skills/`); the symlink points
+at the canonical directory, so an edit here is an edit everywhere.
+
+```sh
+# one-liner: symlink every skill into every agent that the host runs
+for skill in /home/team/workspaces/pi-pilot/skills/*/; do
+  name=$(basename "$skill")
+  ln -sf "$skill" "$HOME/.claude/skills/$name"
+  ln -sf "$skill" "$HOME/.pi/agent/skills/$name"
+  ln -sf "$skill" "$HOME/.agents/skills/$name"
+done
+```
+
+The `pi-pilot` directory also carries `pilot.py` alongside `SKILL.md`; that pairing is a
+convention of the launcher skill (the SKILL teaches the orchestrator how to invoke the launcher;
+the launcher is the script the SKILL refers to). Symlinks preserve the pairing — the agent sees
+`SKILL.md` and `pilot.py` in the same directory it symlinked to.
 
 | Skill | Read it when |
 |---|---|
+| `pi-orchestrator` | Coordinating a multi-round PR review: spawning parallel subagents, scoring each round, deciding ship vs continue vs redo, distilling lessons. |
 | `pi-pilot` | Driving a run: never by hand, and how to tell a live run from a finished one. |
 | `pi-instruments` | Before concluding anything from a command's output. The blind-instrument catalogue. |
 | `pi-coder` | Authoring a unit or a fix round. |
 | `pi-reviewer` | Reviewing as one of several parallel reviewers. Carries three mandatory sweeps. |
+| `pi-prescription-verifier` | After the author implements an adjudication's prescriptions, walking the post-fix diff against each prescription. |
 | `pi-adjudicator` | Turning several parallel reviews into one decision. |
 | `pi-distil` | After a round closes: turning its findings into edits, promotions and retirements of the skills above. |
 

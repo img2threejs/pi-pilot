@@ -98,3 +98,27 @@ measured on that host — Docker CE 29.8.0, Node 24, PI 0.85.1 — and the numbe
 produced the lesson, not from an estimate.
 
 MIT.
+
+## The skills
+
+`pilot.py` starts and tracks runs. The skills say what to put in the brief and what to do with what
+comes back. Install the ones you need into the agent's skills directory (`~/.pi/agent/skills/`,
+`~/.agents/skills/`, `.pi/skills/` or `.agents/skills/`).
+
+| Skill | Read it when |
+|---|---|
+| `pi-pilot` | Driving a run: never by hand, and how to tell a live run from a finished one. |
+| `pi-instruments` | Before concluding anything from a command's output. The blind-instrument catalogue. |
+| `pi-coder` | Authoring a unit or a fix round. |
+| `pi-reviewer` | Reviewing as one of several parallel reviewers. Carries three mandatory sweeps. |
+| `pi-adjudicator` | Turning several parallel reviews into one decision. |
+| `pi-distil` | After a round closes: turning its findings into edits, promotions and retirements of the skills above. |
+
+Every rule in them names the case that produced it — a measured failure, not good practice. That is
+deliberate: a rule without its case is advice, and advice is what an agent skips when the brief is
+long. The cases come from one large project driven this way over many rounds; the rules generalise,
+the anecdotes are there so you can judge whether they do.
+
+The set is meant to be edited. `pi-distil` exists because skills that are only ever added to become
+skills that are not read, and because the step that improves them should be a dispatched task with a
+defined output rather than something the orchestrator remembers to do.
